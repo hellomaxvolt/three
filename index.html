@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="css/main.css" />
+  </head>
+  <body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/102/three.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.2/TweenMax.min.js"></script>
+
+    <script>
+            const scene = new THREE.Scene();
+
+            const camera = new THREE.PerspectiveCamera(
+              75,
+              window.innerWidth / window.innerHeight,
+              0.1,
+              1000
+            );
+            camera.position.z = 5;
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setClearColor("#e5e5e5");
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            document.body.appendChild(renderer.domElement);
+
+            window.addEventListener("resize", () => {
+              renderer.setSize(window.innerWidth, window.innerHeight);
+              camera.aspect = window.innerWidth / window.innerHeight;
+
+              camera.updateProjectionMatrix();
+            });
+
+      //need a raycaster and mouse variable to determine where mouse is located on canvas and which object should respond based on user behavior
+      const raycaster = new THREE.Raycaster()
+      const mouse = new THREE.Vector2()
+
+            const geometry = new THREE.BoxGeometry(1, 1, 1);
+            const material = new THREE.MeshLambertMaterial({ color: 0xffcc00 });
+            const mesh = new THREE.Mesh(geometry, material);
+
+            //--examples of how to play with the cube's appearance
+
+            //   mesh.position.set(-2,2,-2)
+            //   // Below same as above
+            //   //   mesh.position.x = -2
+            //   //   mesh.position.y = 2
+            //   //   mesh.position.z = -2
+
+            //   mesh.rotation.set(45,0,0);
+            //   mesh.scale.set(1,2,1)
+
+            //--end example
+
+            scene.add(mesh);
+
+            const light = new THREE.PointLight(0xffffff, 1, 500);
+            light.position.set(10, 0, 25);
+            scene.add(light);
+
+            const render = function () {
+              requestAnimationFrame(render);
+
+              //--below code to play with constant animations at 60fps aka per each time a screen refresh occurs
+              // mesh.rotation.x += 0.1;
+              // mesh.rotation.y += 0.1;
+              // mesh.scale.x -= .01
+              //--end
+
+              renderer.render(scene, camera);
+            };
+
+            function onMouseMove(event){
+                event.preventDefault()
+
+      //below is how to get mouse positioning and is directly from the documentation
+                mouse.x = (event.clientX / window.innerWidth) * 2-1
+                mouse.y = - (event.clientY / window.innerHeight) * 2+1
+
+                raycaster.setFromCamera(mouse, camera)
+
+                const intersects = raycaster.intersectObjects(scene.children, true)
+                for (let i = 0; i < intersects.length; i++){
+                    //below changes object to red 
+                    intersects[i].object.material.color.set(0xff0000)
+                }
+            }
+
+            render();
+            //below causes this effect to occur with a 3 second delay
+            //   this.tl = new TimelineMax().delay(.3)
+            this.tl = new TimelineMax({ paused: true });
+            this.tl.to(mesh.scale, 1, { x: 2, ease: Expo.easeOut });
+            this.tl.to(mesh.scale, 0.5, { x: 0.5, ease: Expo.easeOut });
+            this.tl.to(mesh.position, 0.5, { x: 2, ease: Expo.easeOut });
+            this.tl.to(
+              mesh.rotation,
+              0.5,
+              { y: Math.PI * 0.5, ease: Expo.easeOut },
+              "=-1.5"
+            );
+            //below is for any click on the document
+            //   document.body.addEventListener("click", () => {this.tl.play()})
+
+            //below is for user beahvior actions
+
+              window.addEventListener("click", onMouseMove)
+    </script>
+  </body>
+</html>
